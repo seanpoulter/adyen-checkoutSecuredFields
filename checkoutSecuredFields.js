@@ -393,6 +393,9 @@ __define( 'checkoutSecuredFields_config', ['DOM', 'Utils', 'Constants', 'shims']
             // By default CSF will NOT perform a console.warn when receiving postMessages with origin or numKey mismatches - user of CSF must explicitly 'opt-in' to get this
             pSharedScope.showWarnings = (pSetupObj.showWarnings === true || pSetupObj.showWarnings === 'true')? true : false;
 
+            // By default CSF will change field focus from expiry date to the CVC - users of CSF must explicitly opt-out to prevent this happening
+            pSharedScope.changeFieldFocus = (pSetupObj.changeFieldFocus === false || pSetupObj.changeFieldFocus === 'false')? false : true;
+
             // NOTE: pSetupObj = {rootNode, configObject, paymentMethods}; // AND loadingContext if 'scoping' loadingContext for testing in development
             var configObj = pSetupObj.configObject;
 
@@ -910,9 +913,14 @@ __define( 'checkoutSecuredFields_handleSFNew', ['DOM', 'Utils', 'Constants', 'sh
             var parentForm = markerResObj.parentForm;
 
 
-            // SET FOCUS ON OTHER INPUT - If user has just typed a correct expiryDate - set focus on the cvc field OR typr a correct expiryMonth - focus on year field
-            (pFeedbackObj.type === 'year' || fieldType === Constants.__HOSTED_YEAR_FIELD_STR) ? pSharedScope.setFocusOnFrame(txVariant, Constants.__HOSTED_CVC_FIELD_STR, 'yearSet') : __noop();
-            (fieldType === Constants.__HOSTED_MONTH_FIELD_STR) ? pSharedScope.setFocusOnFrame(txVariant, Constants.__HOSTED_YEAR_FIELD_STR) : __noop();
+            // SET FOCUS ON OTHER INPUT - If user has just typed a correct expiryDate - set focus on the cvc field OR type a correct expiryMonth - focus on year field
+            if (pSharedScope.changeFieldFocus) {
+                if (pFeedbackObj.type === 'year' || fieldType === Constants.__HOSTED_YEAR_FIELD_STR) {
+                    pSharedScope.setFocusOnFrame(txVariant, Constants.__HOSTED_CVC_FIELD_STR, 'yearSet');
+                } else if (fieldType === Constants.__HOSTED_MONTH_FIELD_STR) {
+                    pSharedScope.setFocusOnFrame(txVariant, Constants.__HOSTED_YEAR_FIELD_STR);
+                }
+            }
             //--
 
 
